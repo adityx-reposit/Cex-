@@ -1,0 +1,1 @@
+fn(Json<DeleteOrder>) -> impl std::future::Future<Output = impl Responder> {delete_order}: HttpServiceFactory

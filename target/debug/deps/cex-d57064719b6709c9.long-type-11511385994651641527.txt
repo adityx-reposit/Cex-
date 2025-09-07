@@ -1,0 +1,1 @@
+fn(Json<depth>) -> impl std::future::Future<Output = impl Responder> {get_depth}: HttpServiceFactory

@@ -1,0 +1,2 @@
+fn(actix_web::web::Json<depth>) -> impl std::future::Future<Output = impl Responder> {get_depth}
+fn(actix_web::web::Json<depth>) -> impl std::future::Future<Output = impl Responder> {get_depth}: HttpServiceFactory
