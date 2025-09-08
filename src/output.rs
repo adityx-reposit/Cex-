@@ -1,5 +1,7 @@
 use serde::{Deserialize,Serialize};
 
+use crate::orderbook::Depth;
+
 
 #[derive(Debug,Serialize,Deserialize)]
 pub struct CreateOrderResponse{
@@ -16,7 +18,7 @@ pub struct DeleteOrderResponse{
 
 #[derive(Debug,Serialize,Deserialize)]
 pub struct DepthResponse {
-   pub    bids:Vec<(f64,f64)>,
-   pub    asks:Vec<(f64,f64)>,
+   pub    bids:Vec<Depth>,
+   pub    asks:Vec<Depth>,
    pub    lastUpdateId:String
 }

@@ -1,9 +1,9 @@
-use std::collections::HashMap;
+use std::{clone, collections::HashMap};
 
-use actix_web::{HttpResponse, Responder};
+
 use serde::{Deserialize, Serialize};
 
-use crate::{input::Side, orderbook};
+use crate::{input::Side, orderbook, output::DepthResponse};
 #[derive(Serialize,Deserialize)]
 pub struct Orderbook{
     pub bids:HashMap<u32,Vec<UserOrder>>,
@@ -14,9 +14,14 @@ pub struct Orderbook{
 
 #[derive(Serialize,Deserialize)]
 pub struct UserOrder{
-    pub  user_id:u32,
+    pub user_id:u32,
     pub qty:u32,
     pub order_id:u32
+}
+#[derive(Clone,Debug,Serialize,Deserialize)]
+pub struct Depth{
+    pub price :f64,
+    pub quantity:f64
 }
 
 impl Orderbook{
@@ -47,7 +52,28 @@ impl Orderbook{
        
     }
 
-    // pub fn get_depth(&self)->&orderbook{
-        
-    // }
+    pub fn get_depth(&self) -> DepthResponse {
+    let mut bids = Vec::new();
+    let mut asks = Vec::new();
+
+    for (price, orders) in self.bids.iter() {
+        bids.push(Depth {
+            price: *price as f64,
+            quantity: orders.iter().map(|o| o.qty as f64).sum(),
+        });
+    }
+
+    for (price, orders) in self.asks.iter() {
+        asks.push(Depth {
+            price: *price as f64,
+            quantity: orders.iter().map(|o| o.qty as f64).sum(),
+        });
+    }
+
+    DepthResponse {
+        bids,
+        asks,
+        lastUpdateId: String::from("jhjhjk"),
+    }
+    }
 }

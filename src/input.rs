@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 
-#[derive(Deserialize,Debug)]
+#[derive(Deserialize,Serialize,Debug)]
 pub struct CreateOrderInput{
    pub price :u32,
    pub quantity:u32,
@@ -10,7 +10,7 @@ pub struct CreateOrderInput{
 }
 
 
-#[derive(Deserialize,Debug,PartialEq)]
+#[derive(Deserialize,Serialize,Debug,PartialEq)]
 pub enum Side{
     Buy,
     Sell

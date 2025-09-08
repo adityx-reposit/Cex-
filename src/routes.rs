@@ -9,21 +9,24 @@ use crate::{input::{CreateOrderInput, DeleteOrder}, orderbook::{self, Orderbook}
 
 
 #[post("/order")]
-pub async fn create_order(Json(body):Json<CreateOrderInput>,orderbook:Data<Arc<Mutex<Orderbook>>>)-> impl Responder{  
-    let mut orderbook=orderbook.lock().unwrap();
-    let price =body.price;
-    let quantity =body.quantity;
-    let user_id =body.user_id;
-    let side =body.side;
-  
-      orderbook.Create_Order(price,quantity,user_id,side);
+pub async fn create_order(
+    Json(body): Json<CreateOrderInput>,
+    orderbook: web::Data<Arc<Mutex<Orderbook>>>
+) -> impl Responder {
+    let mut orderbook = orderbook.lock().unwrap();
 
-    return HttpResponse::Ok().json(CreateOrderResponse{
-        userid:body.user_id
-         
+    let price = body.price;
+    let quantity = body.quantity;
+    let user_id = body.user_id;
+    let side = body.side;
 
+    orderbook.Create_Order(price, quantity, user_id, side);
+
+    HttpResponse::Ok().json(CreateOrderResponse {
+        userid: body.user_id,
     })
 }
+
 #[delete("/order")]
 pub async fn delete_order(Json(body):Json<DeleteOrder>)-> impl Responder{    
   let order_Id = body.order_id;
@@ -35,15 +38,7 @@ pub async fn delete_order(Json(body):Json<DeleteOrder>)-> impl Responder{
 }
 #[get("/order")]
 pub async fn get_depth(order:web::Data<Orderbook>)-> impl Responder{    
-     let bids = vec![
-        (100.5, 10.0),  // price 100.5, qty 10
-        (99.8, 5.0),
-    ];
-
-    let asks = vec![
-        (101.2, 3.0),   // price 101.2, qty 3
-        (102.0, 8.0),
-    ];
+ let response = get_depth(order);
 
 
     return HttpResponse::Ok().json(DepthResponse{
