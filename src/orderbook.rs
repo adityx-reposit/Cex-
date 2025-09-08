@@ -1,79 +1,116 @@
-use std::{clone, collections::HashMap};
-
+use std::collections::{BTreeMap, HashMap};
 
 use serde::{Deserialize, Serialize};
 
-use crate::{input::Side, orderbook, output::DepthResponse};
-#[derive(Serialize,Deserialize)]
-pub struct Orderbook{
-    pub bids:HashMap<u32,Vec<UserOrder>>,
-    pub asks:HashMap<u32,Vec<UserOrder>>,
-    pub order_id_index:u32
+use crate::input::{DeleteOrder, Side};
+
+
+#[derive(Clone)]
+pub struct OpenOrder {
+    pub price: u32,
+    pub quantity: u32,
+    pub side: Side,
+    pub user_id: u32,
+    pub order_id: String,
+    pub filled_quantity: u32,
 }
 
 
-#[derive(Serialize,Deserialize)]
-pub struct UserOrder{
-    pub user_id:u32,
-    pub qty:u32,
-    pub order_id:u32
-}
-#[derive(Clone,Debug,Serialize,Deserialize)]
-pub struct Depth{
-    pub price :u32,
-    pub quantity:u32
+pub struct Orderbook {  
+    pub bids: HashMap<String, Vec<OpenOrder>>,
+    pub asks: HashMap<String, Vec<OpenOrder>>,
+    pub order_id_index: u64,
 }
 
-impl Orderbook{
-   pub fn new()->Self{
-        Self{
-        bids:HashMap::new(),
-        asks:HashMap::new(),
-        order_id_index:0
-       } 
-    }
+#[derive(Clone,Debug, Serialize, Deserialize)]
+pub struct Depth {
+    pub price: u32,
+    pub quantity: u32,
 }
 
-impl Orderbook{
-    pub fn Create_Order(&mut self,price:u32,quantity:u32,user_id:u32,side:Side){
-        let order_id=self.order_id_index;
-        self.order_id_index=self.order_id_index +1;
-        if Side::Buy == side{
-            self.bids.entry(price).or_insert(Vec::new()).push(UserOrder { user_id:90 , qty: quantity, order_id: 123 });
-            
-        }
-        self.order_id_index+=1;
-        if Side::Sell == side{
-            self.asks.entry(price).or_insert(Vec::new()).push(UserOrder { user_id:90 , qty: quantity, order_id: 123 });
-            
+#[derive( Serialize, Deserialize)]
+pub struct DepthResponse {
+    pub bids: Vec<Depth>,
+    pub asks: Vec<Depth>,
+}
+
+impl Default for Orderbook {
+    fn default() -> Self {
+        Self {
+            bids: HashMap::new(),
+            asks: HashMap::new(),
+            order_id_index: 0
         }
     }
-    pub fn DeleteOrder(){
-       
+}
+
+impl Orderbook {
+    pub fn create_order(&mut self, order: OpenOrder) {
+        let order_id = self.order_id_index.to_string();
+        self.order_id_index += 1;
+        match order.side {
+            Side::Buy => {
+                let open_order = OpenOrder {
+                    price: order.price,
+                    quantity: order.quantity,
+                    side: order.side,
+                    user_id: order.user_id,
+                    order_id: order_id,
+                    filled_quantity: 0,
+                };
+                self.bids.entry(order.price.to_string()).or_insert(Vec::new()).push(open_order);
+            }
+            Side::Sell => {
+                let open_order = OpenOrder {
+                    price: order.price,
+                    quantity: order.quantity,
+                    side: order.side,
+                    user_id: order.user_id,
+                    order_id: order_id,
+                    filled_quantity: 0,
+                };
+                self.asks.entry(order.price.to_string()).or_insert(Vec::new()).push(open_order);
+            }
+        }
+    }
+
+    pub fn delete_order(&mut self, order: DeleteOrder) {
+        // Find and remove from bids
+        if let Some(price) = self.bids.iter().find_map(|(price, orders)| {
+            if orders.iter().any(|o| o.order_id == order.order_id) {
+                Some(price.clone())
+            } else {
+                None
+            }
+        }) {
+            if let Some(orders) = self.bids.get_mut(&price) {
+                orders.retain(|o| o.order_id != order.order_id);
+            }
+        }
+
+        // Find and remove from asks
+        if let Some(price) = self.asks.iter().find_map(|(price, orders)| {
+            if orders.iter().any(|o| o.order_id == order.order_id) {
+                Some(price.clone())
+            } else {
+                None
+            }
+        }) {
+            if let Some(orders) = self.asks.get_mut(&price) {
+                orders.retain(|o| o.order_id != order.order_id);
+            }
+        }
     }
 
     pub fn get_depth(&self) -> DepthResponse {
-    let mut bids = Vec::new();
-    let mut asks = Vec::new();
-
-    for (price, orders) in self.bids.iter() {
-        bids.push(Depth {
-            price: *price,
-            quantity: orders.iter().map(|o| o.qty ).sum(),
-        });
-    }
-
-    for (price, orders) in self.asks.iter() {
-        asks.push(Depth {
-            price: *price,
-            quantity: orders.iter().map(|o| o.qty ).sum(),
-        });
-    }
-
-    DepthResponse {
-        bids,
-        asks,
-        lastUpdateId: String::from("jhjhjk"),
-    }
+        let mut bids = Vec::new();
+        let mut asks = Vec::new();
+        for (price, orders) in self.bids.iter() {
+            bids.push(Depth { price: price.parse().unwrap(), quantity: orders.iter().map(|o| o.quantity).sum() });
+        }
+        for (price, orders) in self.asks.iter() {
+            asks.push(Depth { price: price.parse().unwrap(), quantity: orders.iter().map(|o| o.quantity).sum() });  
+        }
+        DepthResponse { bids, asks }
     }
 }

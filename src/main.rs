@@ -15,7 +15,7 @@ pub mod orderbook;
 #[actix_web::main]
 async fn main()->Result<(), std::io::Error> {
     env_logger::init_from_env(Env::default().default_filter_or("debug"));
-  let orderbook = Arc::new(Mutex::new(Orderbook::new()));
+  let orderbook = Arc::new(Mutex::new(Orderbook::default()));
 HttpServer::new(move || {
   App::new()
   .wrap(actix_web::middleware::Logger::default())

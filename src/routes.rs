@@ -1,26 +1,34 @@
+use std::sync::{Arc, Mutex};
 
-use std::{ops::BitAndAssign, sync::{Arc, Mutex}};
+use actix_web::{
+    delete, get, post,
+    web::{self, Data, Json},
+    HttpResponse, Responder,
+};
 
-use actix_web::{delete, get, post, web::{self, Data, Json}, HttpResponse, Responder};
-
-
-use crate::{input::{CreateOrderInput, DeleteOrder}, orderbook::{self, Depth, Orderbook}, output::{ CreateOrderResponse, DeleteOrderResponse, DepthResponse}}; 
-
-
+use crate::{
+    input::{CreateOrderInput, DeleteOrder, Side},
+    orderbook::{Depth, DepthResponse, OpenOrder, Orderbook},
+    output::{CreateOrderResponse, DeleteOrderResponse},
+};
 
 #[post("/order")]
 pub async fn create_order(
     Json(body): Json<CreateOrderInput>,
-    orderbook: web::Data<Arc<Mutex<Orderbook>>>
+    orderbook: web::Data<Arc<Mutex<Orderbook>>>,
 ) -> impl Responder {
     let mut orderbook = orderbook.lock().unwrap();
 
-    let price = body.price;
-    let quantity = body.quantity;
-    let user_id = body.user_id;
-    let side = body.side;
+    let order = OpenOrder {
+        price: body.price,
+        quantity: body.quantity,
+        side: body.side.clone(),
+        user_id: body.user_id.clone(),
+        order_id: "".to_string(), // will be replaced inside `create_order`
+        filled_quantity: 0,
+    };
 
-    orderbook.Create_Order(price, quantity, user_id, side);
+    orderbook.create_order(order);
 
     HttpResponse::Ok().json(CreateOrderResponse {
         userid: body.user_id,
@@ -28,39 +36,25 @@ pub async fn create_order(
 }
 
 #[delete("/order")]
-pub async fn delete_order(Json(body):Json<DeleteOrder>)-> impl Responder{    
-  let order_Id = body.order_id;
-  
-   return  HttpResponse::Ok().json(DeleteOrderResponse{
-      filled_qty:321,
-      average_price:23.54
-   });
-}
-#[get("/order")]
-pub async fn get_depth(order:web::Data<Arc<Mutex<Orderbook>>>)-> impl Responder{  
-    let bids= Vec::new();
-    let asks= Vec::new();
- 
-    for (price, orders) in Orderbook::new().bids.iter() {
-        bids.push((
-            *price,
-            orders.iter().map(|o| o.qty ).sum(),
-    ));
-    }
+pub async fn delete_order(
+    Json(body): Json<DeleteOrder>,
+    orderbook: web::Data<Arc<Mutex<Orderbook>>>,
+) -> impl Responder {
+    let mut orderbook = orderbook.lock().unwrap();
+    orderbook.delete_order(body);
 
-    for (price, orders) in Orderbook::new().asks.iter() {
-        asks.push((
-            *price as f64,
-            orders.iter().map(|o| o.qty as f64).sum(),
-        ));
-    }
-
-
-    return HttpResponse::Ok().json(DepthResponse{
-      bids,
-    asks,
-        lastUpdateId:String::from("adityayadav")
-      
-
+    HttpResponse::Ok().json(DeleteOrderResponse {
+        filled_qty: 0,
+        average_price: 0.0,
     })
+}
+
+#[get("/order")]
+pub async fn get_depth(
+    orderbook: web::Data<Arc<Mutex<Orderbook>>>,
+) -> impl Responder {
+    let orderbook = orderbook.lock().unwrap();
+    let depth = orderbook.get_depth();
+
+    HttpResponse::Ok().json(depth)
 }
