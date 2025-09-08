@@ -1,0 +1,2 @@
+fn(Json<CreateOrderInput>, Data<{type error}>) -> impl std::future::Future<Output = impl Responder> {create_order}
+fn(Json<CreateOrderInput>, Data<{type error}>) -> impl std::future::Future<Output = impl Responder> {create_order}: HttpServiceFactory

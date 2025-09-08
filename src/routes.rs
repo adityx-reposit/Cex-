@@ -1,21 +1,28 @@
 
-use actix_web::{delete, get, post, web::Json, HttpResponse, Responder};
+use std::sync::{Arc, Mutex};
+
+use actix_web::{delete, get, post, web::{self, Data, Json}, HttpResponse, Responder};
 
 
-use crate::{input::{CreateOrderInput, DeleteOrder}, output::{ CreateOrderResponse, DeleteOrderResponse, DepthResponse}}; 
+use crate::{input::{CreateOrderInput, DeleteOrder}, orderbook::{self, Orderbook}, output::{ CreateOrderResponse, DeleteOrderResponse, DepthResponse}}; 
 
 
 
 #[post("/order")]
-pub async fn create_order(body:Json<CreateOrderInput>)-> impl Responder{    
-    let price =body.0.price;
-    let quantity =body.0.quantity;
-    let user_id =body.0.user_id;
-    let side =body.0.side;
+pub async fn create_order(Json(body):Json<CreateOrderInput>,orderbook:Data<Arc<Mutex<Orderbook>>>)-> impl Responder{  
+    let mut orderbook=orderbook.lock().unwrap();
+    let price =body.price;
+    let quantity =body.quantity;
+    let user_id =body.user_id;
+    let side =body.side;
   
+      orderbook.Create_Order(price,quantity,user_id,side);
+
     return HttpResponse::Ok().json(CreateOrderResponse{
-        userid:body.0.user_id
-    });
+        userid:body.user_id
+         
+
+    })
 }
 #[delete("/order")]
 pub async fn delete_order(Json(body):Json<DeleteOrder>)-> impl Responder{    
@@ -27,7 +34,7 @@ pub async fn delete_order(Json(body):Json<DeleteOrder>)-> impl Responder{
    });
 }
 #[get("/order")]
-pub async fn get_depth()-> impl Responder{    
+pub async fn get_depth(order:web::Data<Orderbook>)-> impl Responder{    
      let bids = vec![
         (100.5, 10.0),  // price 100.5, qty 10
         (99.8, 5.0),

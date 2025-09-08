@@ -1,0 +1,2 @@
+fn(actix_web::web::Json<CreateOrderInput>, Data<Orderbook>) -> impl std::future::Future<Output = impl Responder> {create_order}
+fn(actix_web::web::Json<CreateOrderInput>, Data<Orderbook>) -> impl std::future::Future<Output = impl Responder> {create_order}: HttpServiceFactory
