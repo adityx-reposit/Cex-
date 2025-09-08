@@ -18,7 +18,7 @@ pub struct DeleteOrderResponse{
 
 #[derive(Debug,Serialize,Deserialize)]
 pub struct DepthResponse {
-   pub    bids:Vec<Depth>,
-   pub    asks:Vec<Depth>,
+   pub    bids:Vec<(Depth)>,
+   pub    asks:Vec<(Depth)>,
    pub    lastUpdateId:String
 }

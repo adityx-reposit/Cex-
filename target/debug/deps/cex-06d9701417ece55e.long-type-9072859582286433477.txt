@@ -1,0 +1,2 @@
+fn(Data<Arc<Mutex<Orderbook>>>) -> impl std::future::Future<Output = impl Responder> {get_depth}
+fn(Data<Arc<Mutex<Orderbook>>>) -> impl std::future::Future<Output = impl Responder> {get_depth}: HttpServiceFactory

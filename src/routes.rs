@@ -1,10 +1,10 @@
 
-use std::sync::{Arc, Mutex};
+use std::{ops::BitAndAssign, sync::{Arc, Mutex}};
 
 use actix_web::{delete, get, post, web::{self, Data, Json}, HttpResponse, Responder};
 
 
-use crate::{input::{CreateOrderInput, DeleteOrder}, orderbook::{self, Orderbook}, output::{ CreateOrderResponse, DeleteOrderResponse, DepthResponse}}; 
+use crate::{input::{CreateOrderInput, DeleteOrder}, orderbook::{self, Depth, Orderbook}, output::{ CreateOrderResponse, DeleteOrderResponse, DepthResponse}}; 
 
 
 
@@ -37,8 +37,23 @@ pub async fn delete_order(Json(body):Json<DeleteOrder>)-> impl Responder{
    });
 }
 #[get("/order")]
-pub async fn get_depth(order:web::Data<Orderbook>)-> impl Responder{    
- let response = get_depth(order);
+pub async fn get_depth(order:web::Data<Arc<Mutex<Orderbook>>>)-> impl Responder{  
+    let bids= Vec::new();
+    let asks= Vec::new();
+ 
+    for (price, orders) in Orderbook::new().bids.iter() {
+        bids.push((
+            *price,
+            orders.iter().map(|o| o.qty ).sum(),
+    ));
+    }
+
+    for (price, orders) in Orderbook::new().asks.iter() {
+        asks.push((
+            *price as f64,
+            orders.iter().map(|o| o.qty as f64).sum(),
+        ));
+    }
 
 
     return HttpResponse::Ok().json(DepthResponse{

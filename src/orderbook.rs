@@ -20,8 +20,8 @@ pub struct UserOrder{
 }
 #[derive(Clone,Debug,Serialize,Deserialize)]
 pub struct Depth{
-    pub price :f64,
-    pub quantity:f64
+    pub price :u32,
+    pub quantity:u32
 }
 
 impl Orderbook{
@@ -58,15 +58,15 @@ impl Orderbook{
 
     for (price, orders) in self.bids.iter() {
         bids.push(Depth {
-            price: *price as f64,
-            quantity: orders.iter().map(|o| o.qty as f64).sum(),
+            price: *price,
+            quantity: orders.iter().map(|o| o.qty ).sum(),
         });
     }
 
     for (price, orders) in self.asks.iter() {
         asks.push(Depth {
-            price: *price as f64,
-            quantity: orders.iter().map(|o| o.qty as f64).sum(),
+            price: *price,
+            quantity: orders.iter().map(|o| o.qty ).sum(),
         });
     }
 
