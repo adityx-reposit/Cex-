@@ -2,13 +2,13 @@ use std::sync::{Arc, Mutex};
 
 use actix_web::{
     delete, get, post,
-    web::{self, Data, Json},
+    web::{self, Json},
     HttpResponse, Responder,
 };
 
 use crate::{
-    input::{CreateOrderInput, DeleteOrder, Side},
-    orderbook::{Depth, DepthResponse, OpenOrder, Orderbook},
+    input::{CreateOrderInput, DeleteOrder},
+    orderbook::{OpenOrder, Orderbook},
     output::{CreateOrderResponse, DeleteOrderResponse},
 };
 
@@ -28,10 +28,11 @@ pub async fn create_order(
         filled_quantity: 0,
     };
 
-    orderbook.create_order(order);
+    let executed_trades = orderbook.create_order(order);
 
     HttpResponse::Ok().json(CreateOrderResponse {
         userid: body.user_id,
+        executed_trades,
     })
 }
 
@@ -57,4 +58,20 @@ pub async fn get_depth(
     let depth = orderbook.get_depth();
 
     HttpResponse::Ok().json(depth)
+}
+
+#[get("/trades")]
+pub async fn get_trades(
+    orderbook: web::Data<Arc<Mutex<Orderbook>>>,
+    query: web::Query<std::collections::HashMap<String, String>>,
+) -> impl Responder {
+    let mut orderbook = orderbook.lock().unwrap();
+    let limit = query.get("limit")
+        .and_then(|l| l.parse::<i64>().ok())
+        .unwrap_or(100);
+    
+    match orderbook.get_trade_history(limit) {
+        Ok(trades) => HttpResponse::Ok().json(trades),
+        Err(e) => HttpResponse::InternalServerError().json(format!("Error fetching trades: {}", e)),
+    }
 }

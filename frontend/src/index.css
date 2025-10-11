@@ -1,0 +1,77 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-gray-800;
+  }
+
+  body {
+    @apply bg-gray-900 text-white font-inter;
+    background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+    min-height: 100vh;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-white bg-opacity-5 backdrop-blur-md border border-white border-opacity-10;
+  }
+
+  .glass-dark {
+    @apply bg-black bg-opacity-20 backdrop-blur-md border border-gray-800;
+  }
+
+  .neon-buy {
+    @apply shadow-lg shadow-emerald-500/25 border-emerald-500/50;
+  }
+
+  .neon-sell {
+    @apply shadow-lg shadow-red-500/25 border-red-500/50;
+  }
+
+  .btn-primary {
+    @apply px-6 py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95;
+  }
+
+  .btn-buy {
+    @apply btn-primary bg-emerald-600 hover:bg-emerald-500 text-white neon-buy;
+  }
+
+  .btn-sell {
+    @apply btn-primary bg-red-600 hover:bg-red-500 text-white neon-sell;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all duration-300;
+  }
+
+  .table-row {
+    @apply border-b border-gray-800 hover:bg-gray-800/30 transition-colors duration-200;
+  }
+
+  .price-buy {
+    @apply text-emerald-400 font-mono;
+  }
+
+  .price-sell {
+    @apply text-red-400 font-mono;
+  }
+}
+
+@layer utilities {
+  .text-shadow {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}

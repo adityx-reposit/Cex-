@@ -5,7 +5,8 @@ use crate::orderbook::Depth;
 
 #[derive(Debug,Serialize,Deserialize)]
 pub struct CreateOrderResponse{
-    pub userid:u32
+    pub userid:u32,
+    pub executed_trades: Vec<crate::orderbook::Trade>
 }
 
 
@@ -18,7 +19,7 @@ pub struct DeleteOrderResponse{
 
 #[derive(Debug,Serialize,Deserialize)]
 pub struct DepthResponse {
-   pub    bids:Vec<(Depth)>,
-   pub    asks:Vec<(Depth)>,
-   pub    lastUpdateId:String
+   pub    bids:Vec<Depth>,
+   pub    asks:Vec<Depth>,
+   pub    last_update_id:String
 }
