@@ -99,6 +99,9 @@ Query parameters:
 
 ## Database
 
+sql and postgres are added 
+
+
 The system uses SQLite with the following tables:
 
 - `trades`: Stores executed trades with buyer/seller information
